@@ -1,0 +1,150 @@
+var __global = System.getContext() || (function () { return this; }).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var EmailService_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/email/EmailService");
+var UserService_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/ad/UserService");
+var GeneralResources_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/general/connector/GeneralResources");
+
+var connector = new GeneralResources_1._.GeneralResources();
+
+// Read Inputs
+var workflowInputs = workflow.getInputParameters();
+var vcName = workflowInputs["vcName"];
+
+System.log("Print the vc name : " + vcName);
+
+// Parse CSV
+var content = vmList.content.toString();
+var parsedCsv = connector.parseCsv(content);
+
+var vcConnection = vcName;
+
+System.log("Using vCenter: " + vcConnection.name);
+
+for each(var row in parsedCsv) {
+
+    var vmName = row.vmName || row[0];
+
+    if (!vmName) continue;
+
+    vmName = vmName.trim();
+
+    System.log("Processing VM: " + vmName);
+
+    // ---------- FIND VM ----------
+    var found = vcConnection.getAllVirtualMachines(null, "xpath:name='" + vmName + "'");
+
+    if (!found || found.length === 0) {
+        System.warn("VM not found: " + vmName);
+        continue;
+    }
+
+    var vm = found[0];
+
+    System.log("VM Found: " + vm.name);
+
+    // ---------- FETCH DISKS ----------
+    var devices = vm.config.hardware.device;
+
+    // Map controllers
+    // Map controllers
+    var controllers = {};
+
+    for each(var device in devices) {
+
+        if (
+            device instanceof VcVirtualSCSIController ||
+            device instanceof VcVirtualSATAController ||
+            device instanceof VcVirtualNVMEController
+        ) {
+            controllers[device.key] = device.busNumber;
+        }
+    }
+
+    // Process disks
+    for each(var device in devices) {
+
+        if (device instanceof VcVirtualDisk) {
+
+            // var controllerBus = controllers[device.controllerKey];
+            // var unitNumber = device.unitNumber;
+
+            // var slot = controllerBus + ":" + unitNumber;
+
+            // var controller = controllerBus;
+            // var unit = unitNumber;
+
+            var controller = null;
+            var unit = device.unitNumber;
+
+            for each(var d in devices) {
+                if (d.key == device.controllerKey) {
+                    controller = d.busNumber;
+                    break;
+                }
+            }
+
+            if (controller === null || controller === undefined) {
+                controller = "0"; // fallback
+            }
+
+            var slot = controller + ":" + unit;
+
+            var sizeGB = Math.round(device.capacityInKB / (1024 * 1024));
+
+            var dsName = null;
+            var dsKey = null;
+            var diskPath = null;
+
+            if (device.backing && device.backing.datastore) {
+                dsName = device.backing.datastore.name;
+                dsKey = device.backing.datastore._moId;
+            }
+
+            if (device.backing && device.backing.fileName) {
+                diskPath = device.backing.fileName;
+            }
+
+            var persistence = null;
+            var diskFormat = null;
+
+            if (device.backing) {
+
+                // Persistence mode
+                if (device.backing.diskMode) {
+                    persistence = device.backing.diskMode;
+                }
+
+                // Thin / Thick detection
+                if (device.backing.thinProvisioned === true) {
+                    diskFormat = "Thin";
+                }
+                else if (device.backing.eagerlyScrub === true) {
+                    diskFormat = "Thick-EagerZeroed";
+                }
+                else if (device.backing.thinProvisioned === false) {
+                    diskFormat = "Thick-LazyZeroed";
+                }
+
+                if (device.backing.sharing) {
+                    sharing = device.backing.sharing;
+                } else {
+                    sharing = "no Sharing"; // default fallback
+                }
+            }
+
+            System.log(
+                "VM: " + vm.name +
+                " | Slot: " + slot +
+                " | Controller: " + controller +
+                " | Unit: " + unit +
+                " | SizeGB: " + sizeGB +
+                " | Datastore: " + dsName +
+                " | DatastoreKey: " + dsKey +
+                " | DiskPath: " + diskPath +
+                " | Persistence: " + persistence +
+                " | Provisioning: " + diskFormat +
+                " | Sharing: " + sharing
+            );
+        }
+    }
+}
