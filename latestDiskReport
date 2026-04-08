@@ -1,0 +1,219 @@
+var __global = System.getContext() || (function () { return this; }).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var GeneralResources_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/general/connector/GeneralResources");
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var connector = new GeneralResources_1._.GeneralResources();
+
+var dateInfotest = new Date();
+dateInfotest.setMinutes(dateInfotest.getMinutes() + 330);
+var dateInfo = dateInfotest.toISOString().replace("T", " ").split(".")[0];
+
+// Read Inputs
+var workflowInputs = workflow.getInputParameters();
+var vcName = workflowInputs["vcName"];
+
+System.log("Print the vc name : " + vcName);
+
+// Parse CSV
+var content = vmList.content.toString();
+var parsedCsv = connector.parseCsv(content);
+
+var vcConnection = vcName;
+
+System.log("Using vCenter: " + vcConnection.name);
+
+// ================= CSV HEADER =================
+var csvData = [];
+csvData.push([
+    "VMName",            // VMName
+    "DiskName",          // DiskName
+    "CapacityGB",             // CapacityGB
+    "Persistence",        // Persistence
+    "FileName",           // FileName
+    "Sharing",            // Sharing
+    "Bus_Sharing",         // Bus_Sharing
+    "SCSIControllerType",     // SCSIControllerType
+    "Slot",               // Slot
+    "Controller",         // Controller
+    "Unit",               // Unit
+    "SCSI_Node",           // SCSI_Node
+    "Datastore",             // Datastore
+    "Datastore_Type",             // Datastore_Type
+    "Provisioning"          // Provisioning
+]);
+
+// ================= MAIN LOOP =================
+for each(var row in parsedCsv) {
+
+    var vmName = row.vmName || row[0];
+    if (!vmName) continue;
+
+    vmName = vmName.trim();
+    System.log("Processing VM: " + vmName);
+
+    // ---------- FIND VM ----------
+    var found = vcConnection.getAllVirtualMachines(null, "xpath:name='" + vmName + "'");
+
+    if (!found || found.length === 0) {
+        System.warn("VM not found: " + vmName);
+        continue;
+    }
+
+    var vm = found[0];
+    System.log("VM Found: " + vm.name);
+
+    var devices = vm.config.hardware.device;
+
+    // ---------- PROCESS DISKS ----------
+    for each(var device in devices) {
+
+        if (device instanceof VcVirtualDisk) {
+
+            var controller = null;
+            var unit = device.unitNumber;
+            var controllerType = null;
+            var diskLabel = device.deviceInfo.label;
+
+            var scsiNode = null;
+            var busSharing = null;
+
+            for each(var d in devices) {
+
+                if (d.key == device.controllerKey) {
+
+                    controller = d.busNumber;
+
+                    // ✅ SCSI Node
+                    scsiNode = d.busNumber + ":" + unit;
+
+                    // ✅ Bus Sharing
+                    if (d.sharedBus) {
+                        busSharing = d.sharedBus.value;
+                    } else {
+                        busSharing = "noSharing";
+                    }
+
+                    // ✅ Controller Type (IMPORTANT)
+                    if (d instanceof VcParaVirtualSCSIController) {
+                        controllerType = "Paravirtual";
+                    }
+                    else if (d instanceof VcVirtualLsiLogicController) {
+                        controllerType = "LSI Logic";
+                    }
+                    else if (d instanceof VcVirtualLsiLogicSASController) {
+                        controllerType = "LSI SAS";
+                    }
+                    else if (d instanceof VcVirtualBusLogicController) {
+                        controllerType = "BusLogic";
+                    }
+                    else if (d instanceof VcVirtualSATAController) {
+                        controllerType = "SATA";
+                    }
+                    else if (d instanceof VcVirtualNVMEController) {
+                        controllerType = "NVMe";
+                    }
+                    else {
+                        controllerType = "Unknown";
+                    }
+
+                    break;
+                }
+            }
+
+            if (controller === null || controller === undefined) {
+                controller = "0";
+            }
+
+            var slot = controller + ":" + unit;
+            var sizeGB = Math.round(device.capacityInKB / (1024 * 1024));
+
+            var dsName = null;
+            var dsType = null;
+            var diskPath = null;
+
+            if (device.backing && device.backing.datastore) {
+                dsName = device.backing.datastore.name;
+
+                if (device.backing.datastore.summary) {
+                    dsType = device.backing.datastore.summary.type;
+                    if (dsType) dsType = dsType.toUpperCase();
+                }
+            }
+
+            if (device.backing && device.backing.fileName) {
+                diskPath = device.backing.fileName;
+            }
+
+            var persistence = null;
+            var diskFormat = null;
+            var sharing = null;
+
+            if (device.backing) {
+
+                if (device.backing.diskMode) {
+                    persistence = device.backing.diskMode;
+                }
+
+                if (device.backing.thinProvisioned === true) {
+                    diskFormat = "Thin";
+                }
+                else if (device.backing.eagerlyScrub === true) {
+                    diskFormat = "Thick-EagerZeroed";
+                }
+                else if (device.backing.thinProvisioned === false) {
+                    diskFormat = "Thick-LazyZeroed";
+                }
+
+                if (device.backing.sharing) {
+                    sharing = device.backing.sharing;
+                } else {
+                    sharing = "noSharing";
+                }
+            }
+
+            // ---------- PUSH CSV ROW ----------
+            csvData.push([
+                vm.name,        // VMName
+                diskLabel,      // DiskName
+                sizeGB,         // CapacityGB
+                persistence,    // Persistence
+                diskPath,       // FileName
+                sharing,        // Sharing
+                busSharing,     // Bus_Sharing
+                controllerType, // SCSIControllerType
+                slot,           // Slot
+                controller,     // Controller
+                unit,           // Unit
+                scsiNode,       // SCSI_Node
+                dsName,         // Datastore
+                dsType,         // Datastore_Type
+                diskFormat      // Provisioning
+            ]);
+
+
+        }
+    }
+}
+
+// ================= SAVE AFTER LOOP =================
+
+// Convert to CSV
+var lines = [];
+
+for each(var row in csvData) {
+    if (row instanceof Array) {
+        lines.push(row.join(","));
+    } else {
+        lines.push(row);
+    }
+}
+
+var csvRules = lines.join("\n");
+
+// Save file
+var filePath = "SBI Meghdoot/Reports/DiskReport/DiskReport-" + dateInfo + ".csv";
+
+var rulesResourceRE = new ResourceElementAccessor_1._.ResourceElementAccessor(filePath, false);
+rulesResourceRE.setContent(csvRules);
+
+System.log("Disk report saved on: " + filePath);
