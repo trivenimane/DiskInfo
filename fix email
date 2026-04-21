@@ -156,3 +156,51 @@ emailService.vmTagInfoNotification(
 );
 
 System.log("Email sent to " + requestorEmail);
+
+
+fixes-----
+
+// SUCCESS
+successList.push([
+    vmName,
+    vmId,
+    "SUCCESS",
+    categoryName,
+    tagName,
+    ""
+]);
+
+// FAILURE
+failureList.push([
+    vmName,
+    vmId,
+    "FAILED",
+    categoryName,
+    tagName,
+    String(e).replace(/,/g, " ") // avoid CSV break
+]);
+
+----var lines = [];
+
+// Header
+lines.push("VM_Name,VM_ID,Status,Category,Tag,Error");
+
+// Add success rows
+for (var i = 0; i < successList.length; i++) {
+    lines.push(successList[i].join(","));
+}
+
+// Add failure rows
+for (var i = 0; i < failureList.length; i++) {
+    lines.push(failureList[i].join(","));
+}
+
+var csvContentFinal = lines.join("\n");
+
+System.log("CSV Content Preview:\n" + csvContentFinal.substring(0, 500));
+
+----
+var filePath = "/SBI Meghdoot/Reports/VMTags/AssignedTags/AssignedTags-" + dateInfo + ".csv";
+
+----
+
