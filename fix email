@@ -1,31 +1,135 @@
-// ---------- BUILD CSV REPORT ----------
-var lines = [];
+// ---------- SETUP ----------
+var __global = System.getContext() || (function () { return this; }).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var EmailService_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/email/EmailService");
+var UserService_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/ad/UserService");
+var BaseBuilder_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/reporting/tasks/BaseBuilder");
+var ResourceUtil_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/firewall/services/ResourceUtil");
+var GeneralResources_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/general/connector/GeneralResources");
+var TagService_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions.hosttagging.services/TagService");
 
-// Header
-lines.push("VM_Name,VM_ID,Status,Category,Tag,Error");
+var folderPath = "/SBI Meghdoot/Reports/Tags/ExportedTags";
+var connector = new GeneralResources_1._.GeneralResources();
 
-// Success entries
-for (var i = 0; i < successList.length; i++) {
-    lines.push(successList[i] + ",SUCCESS");
+var dateInfotest = new Date();
+dateInfotest.setMinutes(dateInfotest.getMinutes() + 330);
+var dateInfo = dateInfotest.toISOString().replace("T", " ").split(".")[0];
+
+var successList = [];
+var failureList = [];
+
+try {
+
+    // ---------- STEP 0: Retrieve Workflow Inputs ----------
+    var workflowInputs = workflow.getInputParameters();
+    var vCenterRestHost = workflowInputs.vCenterRestHost;
+    System.log("Print the vCenterRestHost : " + vCenterRestHost);
+
+    var vcConnection = vCenterRestHost;
+
+    System.log("Using vCenter: " + vcConnection.name);
+
+    // ? Initialize AFTER getting input
+    var tagService = new TagService_1._.TagService(vCenterRestHost);
+
+    // ? Load cache once
+    tagService.reverseinitializeCache();
+
+    // ---------- STEP 0: Parse CSV from UI ----------
+    var csvContent = vmList.content.toString();
+    var fileData = connector.parseCsv(csvContent);
+
+    for (var i = 0; i < fileData.length; i++) {
+
+        var row = fileData[i];
+
+        var vmId = row["VM_ID"];
+        var vmName = row["VM_Name"];
+
+        if (!vmId || !vmName) continue;
+
+        System.log("==================================================");
+        System.log("Processing VM: " + vmName + " (" + vmId + ")");
+
+        for (var key in row) {
+
+            if (key === "VM_ID" || key === "VM_Name") continue;
+
+            var value = row[key];
+            if (!value || value.trim() === "") continue;
+
+            var categoryName = key.trim();
+            var tagName = value.trim();
+
+            try {
+
+                var categoryId = tagService.getOrCreateCategory(categoryName);
+                var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+                tagService.assignTagToVm(vmId, tagId);
+
+                var successMsg = vmName + " (" + vmId + ") → " + categoryName + ":" + tagName;
+
+                System.log("SUCCESS → " + successMsg);
+                successList.push(successMsg);
+
+                System.sleep(50);
+
+            } catch (e) {
+
+                var failMsg = vmName + " (" + vmId + ") → " + categoryName + ":" + tagName + " | ERROR: " + e;
+
+                System.error("FAILED → " + failMsg);
+                failureList.push(failMsg);
+            }
+
+
+        }
+    }
+    System.log("==================================================");
+    System.log("*************** FINAL SUMMARY ****************");
+    System.log("Total Success: " + successList.length);
+    System.log("Total Failed : " + failureList.length);
+    System.log("==================================================");
+
+    var lines = [];
+    lines.push("VM_Name,VM_ID,Status,Category,Tag,Error");
+
+
+    // Print Success List
+    System.log("----------- SUCCESS LIST -----------");
+    for (var i = 0; i < successList.length; i++) {
+        System.log(successList[i]);
+    }
+
+    // Print Failure List
+    System.log("----------- FAILURE LIST -----------");
+    for (var i = 0; i < failureList.length; i++) {
+        System.error(failureList[i]);
+    }
+    var csvContentFinal = lines.join("\n");
 }
 
-// Failure entries
-for (var i = 0; i < failureList.length; i++) {
-    lines.push(failureList[i] + ",FAILED");
+
+catch (e) {
+    System.error("Unable to parse the file: " + e);
 }
 
-var csvContentFinal = lines.join("\n");
+var vmSummary = {};
 
-------
-var dateInfo = new Date().getTime();
+if (!vmSummary[vmName]) {
+    vmSummary[vmName] = { success: 0, failed: 0 };
+}
 
-var filePath = "SBI Meghdoot/Reports/TaggingReport/TaggingReport-" + dateInfo + ".csv";
+vmSummary[vmName].success++; // or failed+
+
+var filePath = "SBI Meghdoot/Reports/VMTags/AssignedTags-" + dateInfo + ".csv";
 
 var reportRE = new ResourceElementAccessor_1._.ResourceElementAccessor(filePath, false);
 reportRE.setContent(csvContentFinal);
-
 System.log("Tagging report saved on: " + filePath);
------
+
 var listOfAttachments = [];
 
 var baseBuilder = new BaseBuilder_1._.BaseBuilder();
@@ -35,18 +139,17 @@ var fileContent = reportRE.getContent();
 
 var csvAttachment = baseBuilder.createAttachment(fileName, fileContent);
 listOfAttachments.push(csvAttachment);
----------
+
 var requestorName = System.getContext().getParameter("__metadata_userName");
 
 var requestorEmail = new UserService_1._.UserService().getEmailAddress(requestorName);
 
 System.log("Requestor: " + requestorName);
 System.log("Email: " + requestorEmail);
-----------
 
 var emailService = new EmailService_1._.EmailService();
 
-emailService.diskInfoNotification(
+emailService.vmTagInfoNotification(
     requestorEmail,
     requestorName,
     listOfAttachments
