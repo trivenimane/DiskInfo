@@ -187,3 +187,106 @@ Meghdoot Cloud Support
 Data Centers & Cloud
 Desk: 022-27574902/022-27536776/777/778
 e-mail: meghdoot.support@sbi.co.in
+
+
+-----------------Issues-------------------
+
+// ---------- SETUP ----------
+var __global = System.getContext() || (function () { return this; }).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var GeneralResources_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/general/connector/GeneralResources");
+var TagService_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions.hosttagging.services/TagService");
+
+var folderPath = "/SBI Meghdoot/Reports/Tags/ExportedTags";
+var connector = new GeneralResources_1._.GeneralResources();
+
+try {
+
+    // ---------- STEP 0: Retrieve Workflow Inputs ----------
+    var workflowInputs = workflow.getInputParameters();
+    var vCenterRestHost = workflowInputs.vCenterRestHost;
+    System.log("Print the vCenterRestHost : " + vCenterRestHost);
+
+    var vcConnection = vCenterRestHost;
+    System.log("Print the vcConnection : " + vcConnection)
+
+    System.log("Using vCenter: " + vcConnection.name);
+
+    // ? Initialize AFTER getting input
+    var tagService = new TagService_1._.TagService(vCenterRestHost);
+
+    // ? Load cache once
+    tagService.reverseinitializeCache();
+
+    // ---------- STEP 0: Parse CSV from UI ----------
+    var csvContent = vmList.content.toString();
+    var fileData = connector.parseCsv(csvContent);
+
+    for (var i = 0; i < fileData.length; i++) {
+
+        var row = fileData[i];
+
+        var vmId = row["VM_ID"];
+        var vmName = row["VM_Name"];
+
+        if (!vmId || !vmName) continue;
+
+        System.log("==================================================");
+        System.log("Processing VM: " + vmName + " (" + vmId + ")");
+
+        // ---------- FIND VM ----------
+        var found = vcConnection.getAllVirtualMachines(null, "xpath:name='" + vmName + "'");
+
+        if (!found || found.length === 0) {
+            System.warn("VM not found: " + vmName);
+            continue;
+        }
+
+        var vm = found[0];
+
+        // ---------- TAG PROCESS ----------
+        for (var key in row) {
+
+            if (key === "VM_ID" || key === "VM_Name") continue;
+
+            var value = row[key];
+
+            if (!value || value.trim() === "") continue;
+
+            var categoryName = key.trim();
+            var tagName = value.trim();
+
+            try {
+
+                var categoryId = tagService.getOrCreateCategory(categoryName);
+                var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+                tagService.assignTagToVm(vmId, tagId);
+
+                System.log("SUCCESS → " + categoryName + ":" + tagName);
+
+                System.sleep(50);
+
+            } catch (e) {
+                System.error("FAILED → " + categoryName + ":" + tagName + " | " + e);
+            }
+
+        }
+    }
+}
+
+catch (e) {
+    System.error("Unable to parse the file: " + e);
+}
+
+xxxxxxxxxxxxxxx
+
+
+2026-04-21 10:28:17.702 +05:30INFOPrint the vCenterRestHost : RESTHost [name=h03vc01.corp.ad.sbi, id=3ce89906-4a83-417f-b6d5-d03fd5433a22, url=https://h03vc01.corp.ad.sbi, connectionTimeout=30, operationTimeout=900, hostVerification=false, proxyHost=null, proxyPort=-1, schemaRepo=com.vmware.o11n.plugin.rest.schema.SchemaRespository@49207b07, resourceId=null, privateKeyId=null]
+2026-04-21 10:28:17.704 +05:30INFOPrint the vcConnection : RESTHost [name=h03vc01.corp.ad.sbi, id=3ce89906-4a83-417f-b6d5-d03fd5433a22, url=https://h03vc01.corp.ad.sbi, connectionTimeout=30, operationTimeout=900, hostVerification=false, proxyHost=null, proxyPort=-1, schemaRepo=com.vmware.o11n.plugin.rest.schema.SchemaRespository@49207b07, resourceId=null, privateKeyId=null]
+2026-04-21 10:28:17.711 +05:30INFOUsing vCenter: h03vc01.corp.ad.sbi
+2026-04-21 10:28:25.999 +05:30INFOCache Initialized: Categories=165 Tags=1378
+2026-04-21 10:28:26.002 +05:30INFO==================================================
+2026-04-21 10:28:26.005 +05:30INFOProcessing VM: DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923)
+2026-04-21 10:28:26.009 +05:30ERRORUnable to parse the file: TypeError: Cannot find function getAllVirtualMachines in object DynamicWrapper (Instance) : [RESTHost]-[class com.vmware.o11n.plugin.rest.RESTHost] -- VALUE : RESTHost [name=h03vc01.corp.ad.sbi, id=3ce89906-4a83-417f-b6d5-d03fd5433a22, url=https://h03vc01.corp.ad.sbi, connectionTimeout=30, operationTimeout=900, hostVerification=false, proxyHost=null, proxyPort=-1, schemaRepo=com.vmware.o11n.plugin.rest.schema.SchemaRespository@49207b07, resourceId=null, privateKeyId=null].
