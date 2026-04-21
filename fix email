@@ -203,4 +203,119 @@ System.log("CSV Content Preview:\n" + csvContentFinal.substring(0, 500));
 var filePath = "/SBI Meghdoot/Reports/VMTags/AssignedTags/AssignedTags-" + dateInfo + ".csv";
 
 ----
+---------------------result------------------
 
+2026-04-21 11:58:30.054 +05:30INFOPrint the vCenterRestHost : RESTHost [name=h03vc01.corp.ad.sbi, id=db701a3d-a38d-4925-800c-631ad1f6b782, url=https://h03vc01.corp.ad.sbi, connectionTimeout=30, operationTimeout=900, hostVerification=true, proxyHost=, proxyPort=0, schemaRepo=com.vmware.o11n.plugin.rest.schema.SchemaRespository@2ff87bef, resourceId=null, privateKeyId=null]
+2026-04-21 11:58:30.055 +05:30INFOUsing vCenter: h03vc01.corp.ad.sbi
+2026-04-21 11:59:03.646 +05:30INFOCache Initialized: Categories=165 Tags=1380
+2026-04-21 11:59:03.647 +05:30INFO==================================================
+2026-04-21 11:59:03.648 +05:30INFOProcessing VM: DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923)
+2026-04-21 11:59:03.689 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:b8594d89-682f-48c9-ae7c-ae2bf3b41986:GLOBAL
+2026-04-21 11:59:03.690 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → APMID:A&R_Info_83
+2026-04-21 11:59:04.233 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:466aa94e-8d91-4a0a-adc5-547c686055f2:GLOBAL
+2026-04-21 11:59:04.234 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → AppMode:STANDALONE
+2026-04-21 11:59:04.762 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:1c1e924f-a6c6-4fda-9f28-c2a2241b00ff:GLOBAL
+2026-04-21 11:59:04.764 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → Environment:MZ_UAT
+2026-04-21 11:59:05.306 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:7d8c9208-fc91-4255-85e9-2ed67a11f9a7:GLOBAL
+2026-04-21 11:59:05.307 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → Tier:DB_RAC
+2026-04-21 11:59:05.837 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:015340d3-8b51-45ea-8b38-dc4b7914747b:GLOBAL
+2026-04-21 11:59:05.838 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → Criticality:STANDARD
+2026-04-21 11:59:06.369 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:aa3ebb7c-5ba3-4793-bacd-98d49e304344:GLOBAL
+2026-04-21 11:59:06.374 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → Department:ANLT
+2026-04-21 11:59:06.905 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:85182b4e-f290-4feb-9b5c-4bf1c712a0ed:GLOBAL
+2026-04-21 11:59:06.906 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → Location:GBL_AZ1
+2026-04-21 11:59:07.434 +05:30INFOSUCCESS → VM: vm-157923 Tag: urn:vmomi:InventoryServiceTag:d4b58052-f685-4d70-ae8b-17ad1b815dde:GLOBAL
+2026-04-21 11:59:07.435 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → Application:WEBST
+2026-04-21 11:59:07.991 +05:30ERRORFAILED → DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) → RAC:test01 | ERROR: Error: ErrorCode: 400, {"type":"com.vmware.vapi.std.errors.invalid_argument","value":{"error_type":"INVALID_ARGUMENT","messages":[{"args":["urn:vmomi:InventoryServiceTag:62f898e4-d718-4989-9bbd-9e9371f97a69:GLOBAL","DynamicID (com.vmware.vapi.std.dynamic_ID) => {\n    type = VirtualMachine,\n    id = vm-157923:246e04c2-c52c-4b65-a41d-1a92f5b0c4e2\n}"],"default_message":"Tagging cardinality violation","id":""}]}}
+2026-04-21 11:59:07.993 +05:30INFO==================================================
+2026-04-21 11:59:07.994 +05:30INFOProcessing VM: DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924)
+2026-04-21 11:59:08.020 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:b8594d89-682f-48c9-ae7c-ae2bf3b41986:GLOBAL
+2026-04-21 11:59:08.023 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → APMID:A&R_Info_83
+2026-04-21 11:59:08.555 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:466aa94e-8d91-4a0a-adc5-547c686055f2:GLOBAL
+2026-04-21 11:59:08.556 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → AppMode:STANDALONE
+2026-04-21 11:59:09.088 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:1c1e924f-a6c6-4fda-9f28-c2a2241b00ff:GLOBAL
+2026-04-21 11:59:09.089 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → Environment:MZ_UAT
+2026-04-21 11:59:09.622 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:7d8c9208-fc91-4255-85e9-2ed67a11f9a7:GLOBAL
+2026-04-21 11:59:09.623 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → Tier:DB_RAC
+2026-04-21 11:59:10.158 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:015340d3-8b51-45ea-8b38-dc4b7914747b:GLOBAL
+2026-04-21 11:59:10.160 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → Criticality:STANDARD
+2026-04-21 11:59:10.691 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:aa3ebb7c-5ba3-4793-bacd-98d49e304344:GLOBAL
+2026-04-21 11:59:10.692 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → Department:ANLT
+2026-04-21 11:59:11.220 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:85182b4e-f290-4feb-9b5c-4bf1c712a0ed:GLOBAL
+2026-04-21 11:59:11.221 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → Location:GBL_AZ1
+2026-04-21 11:59:11.755 +05:30INFOSUCCESS → VM: vm-157924 Tag: urn:vmomi:InventoryServiceTag:d4b58052-f685-4d70-ae8b-17ad1b815dde:GLOBAL
+2026-04-21 11:59:11.759 +05:30INFOSUCCESS → DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) → Application:WEBST
+2026-04-21 11:59:12.262 +05:30INFO==================================================
+2026-04-21 11:59:12.263 +05:30INFO*************** FINAL SUMMARY ****************
+2026-04-21 11:59:12.264 +05:30INFOTotal Success: 32
+2026-04-21 11:59:12.265 +05:30INFOTotal Failed : 2
+2026-04-21 11:59:12.266 +05:30INFO==================================================
+2026-04-21 11:59:12.267 +05:30INFO----------- SUCCESS LIST -----------
+2026-04-21 11:59:12.268 +05:30INFO----------- FAILURE LIST -----------
+2026-04-21 11:59:12.333 +05:30WARNINGThe saveToVersionRepository method is deprecated and no longer functional. The method will be removed in a future release.
+2026-04-21 11:59:12.335 +05:30INFOTagging report saved on: SBI Meghdoot/Reports/VMTags/AssignedTags/2026-04-21 11:58:30.csv
+2026-04-21 11:59:13.228 +05:30INFOuserId:V1017849
+2026-04-21 11:59:13.229 +05:30INFOInside getuser : userid:V1017849
+2026-04-21 11:59:13.230 +05:30INFOlastindex:-1
+2026-04-21 11:59:13.231 +05:30INFOusername:V1017849
+2026-04-21 11:59:13.527 +05:30INFOuser:[null]
+2026-04-21 11:59:13.532 +05:30INFORequestor: V1017849
+2026-04-21 11:59:13.536 +05:30INFOEmail: triveni.mane.vmware@sbi.co.in
+2026-04-21 11:59:13.795 +05:30INFOtoAddress : triveni.mane.vmware@sbi.co.in, body : Hello V1017849, <br />
+
+
+<br />
+Please find VM tagging details for the VM's :
+<br />
+<table style="border-radius:7px;border:1px solid #ccc;margin:14px;padding:14px;">
+    <tr>
+        <td style="padding:14px">VM taggingk Details </td>
+       
+    </tr>
+    
+</table>
+<h4><em>For more details, please find the attachment with name of "VM tagging Details".</em></h4>
+<br /><br /><em>This is a system generated email, do not reply on this email
+, subject : VM tagging Details
+2026-04-21 11:59:13.797 +05:30INFOAttachments MimeAttachment:ch.dunes.scripting.jsmodel.JSMimeAttachment@78068907
+2026-04-21 11:59:13.798 +05:30INFOAttachments JSON [{}]
+2026-04-21 11:59:13.804 +05:30INFO[ INFO | 2026-04-21 | com.vmware.pscoe.library.mail.Email ] Adding attachment: 2026-04-21 11:58:30.csv with contentType: application/octet-stream
+2026-04-21 11:59:13.807 +05:30INFO[ INFO | 2026-04-21 | com.vmware.pscoe.library.mail.Email ] sending mail to host: ebms-pepismtp.sbi.co.in:587 with user:dcc_mdot, from:vra@alerts.sbi.co.in, to:triveni.mane.vmware@sbi.co.in contentType: text/html
+2026-04-21 11:59:13.867 +05:30INFOEmail sent to triveni.mane.vmware@sbi.co.in
+
+
+VM_Name	VM_ID	Status	Category	Tag	Error	
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ APMID:A&R_Info_83						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	APMID	A&R_Info_83		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ AppMode:STANDALONE						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	AppMode	STANDALONE		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ Environment:MZ_UAT						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	Environment	MZ_UAT		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ Tier:DB_RAC						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	Tier	DB_RAC		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ Criticality:STANDARD						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	Criticality	STANDARD		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ Department:ANLT						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	Department	ANLT		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ Location:GBL_AZ1						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	Location	GBL_AZ1		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ Application:WEBST						
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	SUCCESS	Application	WEBST		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ APMID:A&R_Info_83						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	APMID	A&R_Info_83		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ AppMode:STANDALONE						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	AppMode	STANDALONE		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ Environment:MZ_UAT						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	Environment	MZ_UAT		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ Tier:DB_RAC						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	Tier	DB_RAC		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ Criticality:STANDARD						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	Criticality	STANDARD		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ Department:ANLT						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	Department	ANLT		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ Location:GBL_AZ1						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	Location	GBL_AZ1		
+DR_ANALYTICS_WEBSITE_UAT_DB02 (vm-157924) â†’ Application:WEBST						
+DR_ANALYTICS_WEBSITE_UAT_DB02	vm-157924	SUCCESS	Application	WEBST		
+DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923) â†’ RAC:test01 | ERROR: Error: ErrorCode: 400	 {"type":"com.vmware.vapi.std.errors.invalid_argument"	value:{"error_type":"INVALID_ARGUMENT"	messages:[{"args":["urn:vmomi:InventoryServiceTag:62f898e4-d718-4989-9bbd-9e9371f97a69:GLOBAL"	DynamicID (com.vmware.vapi.std.dynamic_ID) => {\n    type = VirtualMachine,\n    id = vm-157923:246e04c2-c52c-4b65-a41d-1a92f5b0c4e2\n}]	default_message:"Tagging cardinality violation"	id:""}]}}
+DR_ANALYTICS_WEBSITE_UAT_DB01	vm-157923	FAILED	RAC	test01	Error: ErrorCode: 400  {"type":"com.vmware.vapi.std.errors.invalid_argument" "value":{"error_type":"INVALID_ARGUMENT" "messages":[{"args":["urn:vmomi:InventoryServiceTag:62f898e4-d718-4989-9bbd-9e9371f97a69:GLOBAL" "DynamicID (com.vmware.vapi.std.dynamic_ID) => {\n    type = VirtualMachine \n    id = vm-157923:246e04c2-c52c-4b65-a41d-1a92f5b0c4e2\n}"] "default_message":"Tagging cardinality violation" "id":""}]}}	
