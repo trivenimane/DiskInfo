@@ -290,3 +290,48 @@ xxxxxxxxxxxxxxx
 2026-04-21 10:28:26.002 +05:30INFO==================================================
 2026-04-21 10:28:26.005 +05:30INFOProcessing VM: DR_ANALYTICS_WEBSITE_UAT_DB01 (vm-157923)
 2026-04-21 10:28:26.009 +05:30ERRORUnable to parse the file: TypeError: Cannot find function getAllVirtualMachines in object DynamicWrapper (Instance) : [RESTHost]-[class com.vmware.o11n.plugin.rest.RESTHost] -- VALUE : RESTHost [name=h03vc01.corp.ad.sbi, id=3ce89906-4a83-417f-b6d5-d03fd5433a22, url=https://h03vc01.corp.ad.sbi, connectionTimeout=30, operationTimeout=900, hostVerification=false, proxyHost=null, proxyPort=-1, schemaRepo=com.vmware.o11n.plugin.rest.schema.SchemaRespository@49207b07, resourceId=null, privateKeyId=null].
+
+
+
+
+fixed -------------------
+
+for (var i = 0; i < fileData.length; i++) {
+
+    var row = fileData[i];
+
+    var vmId = row["VM_ID"];
+    var vmName = row["VM_Name"];
+
+    if (!vmId || !vmName) continue;
+
+    System.log("==================================================");
+    System.log("Processing VM: " + vmName + " (" + vmId + ")");
+
+    for (var key in row) {
+
+        if (key === "VM_ID" || key === "VM_Name") continue;
+
+        var value = row[key];
+        if (!value || value.trim() === "") continue;
+
+        var categoryName = key.trim();
+        var tagName = value.trim();
+
+        try {
+
+            var categoryId = tagService.getOrCreateCategory(categoryName);
+            var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+            // ✅ Directly use vmId
+            tagService.assignTagToVm(vmId, tagId);
+
+            System.log("SUCCESS → " + categoryName + ":" + tagName);
+
+            System.sleep(50);
+
+        } catch (e) {
+            System.error("FAILED → " + categoryName + ":" + tagName + " | " + e);
+        }
+    }
+}
