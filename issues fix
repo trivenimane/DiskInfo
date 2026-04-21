@@ -335,3 +335,56 @@ for (var i = 0; i < fileData.length; i++) {
         }
     }
 }
+------------------------
+
+try {
+
+    var categoryId = tagService.getOrCreateCategory(categoryName);
+    var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+    tagService.assignTagToVm(vmId, tagId);
+
+    var successMsg = vmName + " (" + vmId + ") → " + categoryName + ":" + tagName;
+
+    System.log("SUCCESS → " + successMsg);
+    successList.push(successMsg);
+
+    System.sleep(50);
+
+} catch (e) {
+
+    var failMsg = vmName + " (" + vmId + ") → " + categoryName + ":" + tagName + " | ERROR: " + e;
+
+    System.error("FAILED → " + failMsg);
+    failureList.push(failMsg);
+}
+
+
+System.log("==================================================");
+System.log("*************** FINAL SUMMARY ****************");
+System.log("Total Success: " + successList.length);
+System.log("Total Failed : " + failureList.length);
+System.log("==================================================");
+
+// Print Success List
+System.log("----------- SUCCESS LIST -----------");
+for each (var s in successList) {
+    System.log(s);
+}
+
+// Print Failure List
+System.log("----------- FAILURE LIST -----------");
+for each (var f in failureList) {
+    System.error(f);
+}
+----------------------
+
+
+
+var vmSummary = {};
+
+if (!vmSummary[vmName]) {
+    vmSummary[vmName] = { success: 0, failed: 0 };
+}
+
+vmSummary[vmName].success++; // or failed++
