@@ -123,6 +123,64 @@ catch (e) {
     }
 
 
+------fixed ------------
+
+// ---------- STEP 0: Parse CSV from UI ----------
+var csvContent = vmList.content.toString();
+var fileData = connector.parseCsv(csvContent);
+
+for (var i = 0; i < fileData.length; i++) {
+
+    var row = fileData[i];
+
+    var vmId = row["VM_ID"];
+    var vmName = row["VM_Name"];
+
+    if (!vmId || !vmName) continue;
+
+    System.log("==================================================");
+    System.log("Processing VM: " + vmName + " (" + vmId + ")");
+
+    // ---------- FIND VM ----------
+    var found = vcConnection.getAllVirtualMachines(null, "xpath:name='" + vmName + "'");
+
+    if (!found || found.length === 0) {
+        System.warn("VM not found: " + vmName);
+        continue;
+    }
+
+    var vm = found[0];
+
+    // ---------- TAG PROCESS ----------
+    for (var key in row) {
+
+        if (key === "VM_ID" || key === "VM_Name") continue;
+
+        var value = row[key];
+
+        if (!value || value.trim() === "") continue;
+
+        var categoryName = key.trim();
+        var tagName = value.trim();
+
+        try {
+
+            var categoryId = tagService.getOrCreateCategory(categoryName);
+            var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+            tagService.assignTagToVm(vmId, tagId);
+
+            System.log("SUCCESS → " + categoryName + ":" + tagName);
+
+            System.sleep(50);
+
+        } catch (e) {
+            System.error("FAILED → " + categoryName + ":" + tagName + " | " + e);
+        }
+    }
+}
+
+
 Thanks and Regards
 Triveni Mane
 Meghdoot Cloud Support
