@@ -1,0 +1,172 @@
+email:
+
+// ---------- SETUP ----------
+var __global = System.getContext() || (function () { return this; }).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var GeneralResources_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/general/connector/GeneralResources");
+var TagService_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions.hosttagging.services/TagService");
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var EmailService_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/email/EmailService");
+var UserService_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/ad/UserService");
+var BaseBuilder_1 = VROES.importLazy("com.vmware.pscoe.sbi.meghdootAugmentation.ts.actions/reporting/tasks/BaseBuilder");
+
+var connector = new GeneralResources_1._.GeneralResources();
+
+var successList = [];
+var failureList = [];
+
+try {
+
+    // ---------- STEP 0: Retrieve Workflow Inputs ----------
+    var workflowInputs = workflow.getInputParameters();
+    var vCenterRestHost = workflowInputs.vCenterRestHost;
+    System.log("Print the vCenterRestHost : " + vCenterRestHost);
+
+    var vcConnection = vCenterRestHost;
+    System.log("Print the vcConnection : " + vcConnection)
+
+    System.log("Using vCenter: " + vcConnection.name);
+
+    // ? Initialize AFTER getting input
+    var tagService = new TagService_1._.TagService(vCenterRestHost);
+
+    // ? Load cache once
+    tagService.reverseinitializeCache();
+
+    // ---------- STEP 0: Parse CSV from UI ----------
+    var csvContent = vmList.content.toString();
+    var fileData = connector.parseCsv(csvContent);
+
+    for (var i = 0; i < fileData.length; i++) {
+
+        var row = fileData[i];
+
+        var vmId = row["VM_ID"];
+        var vmName = row["VM_Name"];
+
+        if (!vmId || !vmName) continue;
+
+        System.log("==================================================");
+        System.log("Processing VM: " + vmName + " (" + vmId + ")");
+
+        for (var key in row) {
+
+            if (key === "VM_ID" || key === "VM_Name") continue;
+
+            var value = row[key];
+            if (!value || value.trim() === "") continue;
+
+            var categoryName = key.trim();
+            var tagName = value.trim();
+
+            try {
+
+                var categoryId = tagService.getOrCreateCategory(categoryName);
+                var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+                tagService.assignTagToVm(vmId, tagId);
+
+                var successMsg = vmName + " (" + vmId + ") → " + categoryName + ":" + tagName;
+
+                System.log("SUCCESS → " + successMsg);
+                successList.push(successMsg);
+
+                System.sleep(50);
+
+            } catch (e) {
+
+                var failMsg = vmName + " (" + vmId + ") → " + categoryName + ":" + tagName + " | ERROR: " + e;
+
+                System.error("FAILED → " + failMsg);
+                failureList.push(failMsg);
+            }
+
+
+        }
+    }
+    System.log("==================================================");
+    System.log("*************** FINAL SUMMARY ****************");
+    System.log("Total Success: " + successList.length);
+    System.log("Total Failed : " + failureList.length);
+    System.log("==================================================");
+
+    // Print Success List
+    System.log("----------- SUCCESS LIST -----------");
+    for (var i = 0; i < successList.length; i++) {
+        System.log(s);
+    }
+
+    // Print Failure List
+    System.log("----------- FAILURE LIST -----------");
+    for (var i = 0; i < failureList.length; i++) {
+        System.error(f);
+    }
+}
+
+
+catch (e) {
+    System.error("Unable to parse the file: " + e);
+}
+
+var vmSummary = {};
+
+if (!vmSummary[vmName]) {
+    vmSummary[vmName] = { success: 0, failed: 0 };
+}
+
+vmSummary[vmName].success++; // or failed+
+
+// ================= SAVE AFTER LOOP =================
+var emailService = new EmailService_1._.EmailService();
+var baseBuilder = new BaseBuilder_1._.BaseBuilder();
+
+// Convert to CSV
+var lines = [];
+
+for each(var row in csvData) {
+    if (row instanceof Array) {
+        lines.push(row.join(","));
+    } else {
+        lines.push(row);
+    }
+}
+
+var csvRules = lines.join("\n");
+
+// Save file
+var filePath = "SBI Meghdoot/Reports/DiskReport/DiskReport-" + dateInfo + ".csv";
+
+var diskResourceRE = new ResourceElementAccessor_1._.ResourceElementAccessor(filePath, false);
+diskResourceRE.setContent(csvRules);
+
+System.log("Disk report saved on: " + filePath);
+
+var userName = System.getContext().getParameter("__metadata_userName");
+var requestorName = System.getContext().getParameter("__metadata_userName");
+System.log("Print requestor name: " + requestorName);
+var requestorEmail = new UserService_1._.UserService().getEmailAddress(requestorName);
+System.log("Print requestor email: " + requestorEmail);
+// ---------- STEP 5: Prepare email attachment ----------
+var listOfAttachments = [];
+var baseBuilder = new BaseBuilder_1._.BaseBuilder();
+
+var fileName = filePath.split("/").pop();
+var fileContent = diskResourceRE.getContent();
+
+// Attach the disk summary CSV
+var csvMimeAttachment = baseBuilder.createAttachment(fileName, fileContent);
+listOfAttachments.push(csvMimeAttachment);
+
+// Log attachment details for debugging
+System.log("Attachment prepared:");
+System.log("Filename: " + fileName);
+System.log("Content preview:\n" + fileContent.substring(0, 200) + (fileContent.length > 200 ? "..." : ""));
+
+var emailService = new EmailService_1._.EmailService();
+
+// Use the appropriate method in EmailService; assuming 'diskAddedNotification' exists like in your example
+emailService.diskInfoNotification(requestorEmail, requestorName, listOfAttachments);
+
+
+System.log("Email sent to " + requestorEmail);
