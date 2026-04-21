@@ -1,0 +1,131 @@
+// ---------- SETUP ----------
+var __global = System.getContext() || (function () { return this; }).call(null);
+var VROES = __global.__VROES || (__global.__VROES = System.getModule("com.vmware.pscoe.library.ecmascript").VROES());
+var ResourceElementAccessor_1 = VROES.importLazy("com.vmware.pscoe.library.ts.util/ResourceElementAccessor");
+var GeneralResources_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions/general/connector/GeneralResources");
+var TagService_1 = VROES.importLazy("com.vmware.pscoe.sbi.common.actions.hosttagging.services/TagService");
+
+var folderPath = "/SBI Meghdoot/Reports/Tags/ExportedTags";
+var connector = new GeneralResources_1._.GeneralResources();
+//var tagService1 = new TagService_1._.TagService();
+
+
+try {
+
+    // ---------- STEP 0: Retrieve Workflow Inputs ----------
+    var workflowInputs = workflow.getInputParameters();
+    var vCenterRestHost = workflowInputs.vCenterRestHost;
+    System.log("Print the vCenterRestHost : " + vCenterRestHost);
+
+    // ? Initialize AFTER getting input
+    var tagService = new TagService_1._.TagService(vCenterRestHost);
+
+    // ? Load cache once
+    tagService.reverseinitializeCache();
+
+    // Parse CSV
+    var content = vmList.content.toString();
+    var parsedCsv = connector.parseCsv(content);
+
+    //
+
+    for each(var row in parsedCsv) {
+
+        var vmName = row.vmName || row[0];
+
+        if (!vmName) continue;
+
+        vmName = vmName.trim();
+
+        System.log("Processing VM: " + vmName);
+
+        // ---------- FIND VM ----------
+        var found = vcConnection.getAllVirtualMachines(null, "xpath:name='" + vmName + "'");
+
+        if (!found || found.length === 0) {
+            System.warn("VM not found: " + vmName);
+            continue;
+        }
+
+        var vm = found[0];
+
+        System.log("VM Found: " + vm.name);
+       
+        // ---------- Get vCenter short name ----------
+        var url = vCenterRestHost.url;
+        var host = url.replace("https://", "").replace("http://", "");
+        host = host.split(".")[0];
+        System.log("vCenter short name: " + host);
+        System.log("Print the folderPath : " + folderPath);
+        // ---------- STEP 1: Read CSV from Resource Element ----------
+        var selectedFilePath = folderPath + "/" + csvFile;
+        System.log("Print the selectedFilePath : " + selectedFilePath);
+        var selectedFilePathRE = new ResourceElementAccessor_1._.ResourceElementAccessor(selectedFilePath, false);
+        var csvContent = selectedFilePathRE.getContent();
+        var fileData = connector.parseCsv(csvContent);
+        System.log("Parsed CSV rows: " + JSON.stringify(fileData));
+        // ---------- STEP 2: Extract VM + Tags ----------
+
+        for (var i = 0; i < fileData.length; i++) {
+
+            var row = fileData[i];
+
+            var vmId = row["VM_ID"];
+            var vmName = row["VM_Name"];
+
+            System.log("==================================================");
+            System.log("Processing VM: " + vmName + " (" + vmId + ")");
+
+            for (var key in row) {
+
+                if (key === "VM_ID" || key === "VM_Name") continue;
+
+                var value = row[key];
+
+                if (!value || value.trim() === "") continue;
+
+                var categoryName = key.trim();
+                var tagName = value.trim();
+
+                // normalize once
+                var normalizedCategory = tagService._normalize(categoryName);
+                var normalizedTag = tagService._normalize(tagName);
+
+                try {
+
+                    // ? 1. Get or Create Category
+                    var categoryId = tagService.getOrCreateCategory(categoryName);
+
+                    // ? 2. Get or Create Tag (uses cache)
+                    var tagId = tagService.getOrCreateTag(categoryName, categoryId, tagName);
+
+                    System.log("DEBUG ? VM: " + vmId +
+                        " Category: " + categoryName +
+                        " Tag: " + tagName +
+                        " TagID: " + tagId);
+
+                    // ? 3. Assign Tag
+                    tagService.assignTagToVm(vmId, tagId);
+
+                    System.log("SUCCESS ? " + categoryName + ":" + tagName);
+
+                    System.sleep(50);
+
+                } catch (e) {
+                    System.error("FAILED ? " + categoryName + ":" + tagName + " | " + e);
+                }
+            }
+        }
+
+    }
+catch (e) {
+        System.error("Unable to parse the file: " + e);
+    }
+
+
+Thanks and Regards
+Triveni Mane
+Meghdoot Cloud Support
+Data Centers & Cloud
+Desk: 022-27574902/022-27536776/777/778
+e-mail: meghdoot.support@sbi.co.in
